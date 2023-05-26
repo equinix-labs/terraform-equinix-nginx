@@ -1,20 +1,17 @@
-# terraform-equinix-template
+## Equinix Fabric L2 Connection To Google Cloud Interconnect Terraform module
 
-<!-- TEMPLATE: Review all "TEMPLATE" comments and remove them when applied. -->
-<!-- TEMPLATE: replace "template" with the name of your project. The prefix "terraform-equinix-" informs the Terraform registry that this project is a Terraform module associated with the Equinix provider, preserve this prefix. -->
 [![Experimental](https://img.shields.io/badge/Stability-Experimental-red.svg)](https://github.com/equinix-labs/standards#about-uniform-standards)
-[![run-pre-commit-hooks](https://github.com/equinix-labs/terraform-equinix-template/actions/workflows/pre-commit.yaml/badge.svg)](https://github.com/equinix-labs/terraform-equinix-template/actions/workflows/pre-commit.yaml)
-[![generate-terraform-docs](https://github.com/equinix-labs/terraform-equinix-template/actions/workflows/documentation.yaml/badge.svg)](https://github.com/equinix-labs/terraform-equinix-template/actions/workflows/documentation.yaml)
+[![terraform](https://github.com/equinix-labs/terraform-equinix-template/actions/workflows/integration.yaml/badge.svg)](https://github.com/equinix-labs/terraform-equinix-template/actions/workflows/integration.yaml)
 
-`terraform-equinix-template` is a minimal Terraform module that utilizes [Terraform providers for Equinix](https://registry.terraform.io/namespaces/equinix) to provision digital infrastructure and demonstrate higher level integrations.
+`terraform-equinix-network-edge-nginx` is a Terraform module that utilizes [Terraform provider for Equinix](https://registry.terraform.io/providers/equinix/equinix/latest) and [Terraform provider for Google](https://registry.terraform.io/providers/hashicorp/google/latest/docs) to to create Network Edge NGINX device.
 
-<!-- TEMPLATE: Insert an image here of the infrastructure diagram. You can generate a starting image using instructions found at https://www.terraform.io/docs/cli/commands/graph.html#generating-images -->
 
-## Usage
+This module creates a NGINX single device, HA pair and Cluster based on configuration.
+### Usage
 
 This project is experimental and supported by the user community. Equinix does not provide support for this project.
 
-Install Terraform using the [tfenv](https://github.com/tfutils/tfenv) utility.
+Install Terraform using the official guides at <https://learn.hashicorp.com/tutorials/terraform/install-cli>.
 
 This project may be forked, cloned, or downloaded and modified as needed as the base in your integrations and deployments.
 
@@ -24,97 +21,52 @@ To use this module in a new project, create a file such as:
 
 ```hcl
 # main.tf
-terraform {
-  required_providers {
-    equinix = {
-      source = "equinix/equinix"
-    }
+provider "equinix" {
+  client_id     = var.equinix_client_id
+  client_secret = var.equinix_client_secret
 }
 
-module "example" {
-  source = "github.com/equinix-labs/template"
-  # TEMPLATE: replace "template" with the name of the repo after the terraform-equinix- prefix.
-
-  # Published modules can be sourced as:
-  # source = "equinix-labs/template/equinix"
-  # See https://www.terraform.io/docs/registry/modules/publish.html for details.
-
-  # version = "0.1.0"
-
-  # TEMPLATE: insert required variables here
+module "nginx-single" {
+  source                 = "equinix-labs/network-edge-device-nginx/equinix"
+  name                   = "terraform-test-NGINX"
+  hostname               = "terraform-nginx"
+  metro_code             = var.metro_code_primary
+  account_number         = "123456"
+  platform               = "small"
+  software_package       = "STD"
+  term_length            = 1
+  notifications          = ["test@test.com"]
+  additional_bandwidth   = 50
+  mgmt_acl_template_uuid = equinix_network_acl_template.nginx-pri.id
+  ssh_key = {
+    userName = "johndoe"
+    keyName  = equinix_network_ssh_key.johndoe.name
+  }
 }
+
 ```
-
-Install [pre-commit](https://pre-commit.com/#install) with its prerequesites: [python](https://docs.python.org/3/using/index.html) and [pip](https://pip.pypa.io/en/stable/installation/).
-
-Configure pre-commit: `pre-commit install`.
-
-Install required packages: [tflint](https://github.com/terraform-linters/tflint), [tfsec](https://aquasecurity.github.io/tfsec/v1.0.11/getting-started/installation/), [shfmt](https://github.com/mvdan/sh), [shellcheck](https://github.com/koalaman/shellcheck), and [markdownlint](https://github.com/markdownlint/markdownlint).
 
 Run `terraform init -upgrade` and `terraform apply`.
 
-## Module Documentation
+### Variables
 
-The main README.md, the modules README.md and the examples README.md are populated by [terraform-docs worflow job](.github/workflows/documentation.yaml). The following sections are appended between the terraform-docs delimeters: Requiremenents, Providers, Modules, Resources, Inputs, and Outputs.
+See <https://registry.terraform.io/modules/equinix-labs/network-edge-device-nginx/equinix/latest?tab=inputs> for a description of all variables.
 
-## Module Release and Changelog Generation
+### Outputs
 
-The module git release and [changelog](CHANGELOG.md) are generated by the [release workflow job](.github/workflows/release.yaml). The release worflow follows the [conventional commits convention](https://www.conventionalcommits.org/). To submit a commit, please follow the [commit message format guidelines](https://www.conventionalcommits.org/en/v1.0.0/#specification). This job is set to run manually by default.
+See <https://registry.terraform.io/modules/equinix-labs/network-edge-device-nginx/equinix/latest?tab=outputs> for a description of all outputs.
 
-Example commit message: `fix: disabled log generation for system services`
-
-For more examples, please see [conventional commit message examples](https://www.conventionalcommits.org/en/v1.0.0/#examples).
-
-## Examples
-
-To view examples for how you can leverage this module, please see the [examples](examples/) directory.
-
-<!-- TEMPLATE: The following block has been generated by terraform-docs util: https://github.com/terraform-docs/terraform-docs -->
-<!-- BEGIN_TF_DOCS -->
-## Requirements
-
-| Name | Version |
-|------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3 |
-| <a name="requirement_equinix"></a> [equinix](#requirement\_equinix) | >= 1.8.0 |
-
-## Providers
-
-| Name | Version |
-|------|---------|
-| <a name="provider_equinix"></a> [equinix](#provider\_equinix) | >= 1.8.1 |
-
-## Modules
-
-| Name | Source | Version |
-|------|--------|---------|
-| <a name="module_inline-module"></a> [inline-module](#module\_inline-module) | ./modules/inline-module | n/a |
-
-## Resources
+### Resources
 
 | Name | Type |
 |------|------|
-| [equinix_metal_device.example](https://registry.terraform.io/providers/equinix/equinix/latest/docs/resources/metal_device) | resource |
+| [equinix_network_device.this](https://registry.terraform.io/providers/equinix/equinix/latest/docs/resources/equinix_network_device) | resource |
+| [equinix_network_device_type.this](https://registry.terraform.io/providers/equinix/equinix/latest/docs/data-sources/equinix_network_device_type) | data source |
+| [equinix_network_device_platform.this](https://registry.terraform.io/providers/equinix/equinix/latest/docs/data-sources/equinix_network_device_platform) | data source |
+| [equinix_network_device_software.this](https://registry.terraform.io/providers/equinix/equinix/latest/docs/data-sources/equinix_network_device_software) | data source |
 
-## Inputs
+### Examples
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| <a name="input_example_auth_token"></a> [example\_auth\_token](#input\_example\_auth\_token) | The example auth token value defines what will be included in the example resource in main.tf. This example is descriptive. | `string` | n/a | yes |
-| <a name="input_example_project_id"></a> [example\_project\_id](#input\_example\_project\_id) | The example project id value defines what will be included in the example resource in main.tf. This example is descriptive. | `string` | n/a | yes |
-
-## Outputs
-
-| Name | Description |
-|------|-------------|
-| <a name="output_example_device_hostname"></a> [example\_device\_hostname](#output\_example\_device\_hostname) | The example output. In practice, output value reference implicit resource attributes declared in main.tf |
-| <a name="output_example_gateway_id"></a> [example\_gateway\_id](#output\_example\_gateway\_id) | The example output. In practice, output value reference implicit resource attributes declared in main.tf |
-<!-- END_TF_DOCS -->
-## Contributing
-
-If you would like to contribute to this module, see [CONTRIBUTING](CONTRIBUTING.md) page.
-
-## License
-
-Apache License, Version 2.0. See [LICENSE](LICENSE).
-<!-- TEMPLATE: Expand this section with any additional information or requirements. -->
+- [Network Edge NGINX single device](https://registry.terraform.io/modules/equinix-labs/network-edge-device-nginx/equinix/latest/examples/nginx-single/)
+- [Network Edge NGINX HA pair device](https://registry.terraform.io/modules/equinix-labs/network-edge-device-nginx/equinix/latest/examples/nginx-ha/)
+- [Network Edge cluster device](https://registry.terraform.io/modules/equinix-labs/network-edge-device-nginx/equinix/latest/examples/nginx-cluster/)
