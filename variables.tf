@@ -43,10 +43,7 @@ variable "name" {
 variable "hostname" {
   description = "Device hostname"
   type        = string
-  validation {
-    condition     = length(var.hostname) >= 2 && length(var.hostname) <= 10
-    error_message = "Device hostname should consist of 2 to 10 characters."
-  }
+  default     = ""
 }
 
 variable "term_length" {

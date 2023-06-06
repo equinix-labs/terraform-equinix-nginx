@@ -3,10 +3,11 @@ provider "equinix" {
   client_secret = var.equinix_client_secret
 }
 
-module "nginx-ha" {
+module "nginx_ha" {
   source                 = "equinix-labs/network-edge-device-nginx/equinix"
+  version                = "1.0.0"
   name                   = "terraform-test-NGINX-ha"
-  hostname               = "terraform-nginx-ha"
+  hostname               = "nginx-pri"
   metro_code             = var.metro_code_primary
   account_number         = "123456"
   platform               = "small"
@@ -14,7 +15,7 @@ module "nginx-ha" {
   term_length            = 1
   notifications          = ["test@test.com"]
   additional_bandwidth   = 50
-  mgmt_acl_template_uuid = equinix_network_acl_template.nginx-pri.id
+  mgmt_acl_template_uuid = equinix_network_acl_template.nginx_pri.id
   ssh_key = {
     userName = "johndoe-primary"
     keyName  = equinix_network_ssh_key.johndoe.name
@@ -22,19 +23,19 @@ module "nginx-ha" {
   secondary = {
     enabled                = true
     metro_code             = var.metro_code_secondary
-    hostname               = "vsrx-sec"
-    account_number         = "123765"
+    hostname               = "nginx-sec"
+    account_number         = "135887"
     additional_bandwidth   = 50
-    mgmt_acl_template_uuid = equinix_network_acl_template.nginx-sec.id
+    mgmt_acl_template_uuid = equinix_network_acl_template.nginx_sec.id
   }
 }
 
 resource "equinix_network_ssh_key" "johndoe" {
   name       = "johndoe-secondary"
-  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDpXGdxljAyPp9vH97436U171cX2gRkfPnpL8ebrk7ZBeeIpdjtd8mYpXf6fOI0o91TQXZTYtjABzeRgg6/m9hsMOnTHjzWpFyuj/hiPuiie1WtT4NffSH1ALQFX//zouBLmdNiYFMLfEVPZleergAqsYOHGCiQuR6Qh5j0yc5Wx+LKxiRZyjsSqo+EB8V6xBXi2i5PDJXK+dYG8YU9vdNeQdB84HvTWcGEnLR5w7pgC74pBVwzs3oWLy+3jWS0TKKtflmryeFRufXq87gEkC1MOWX88uQgjyCsemuhPdN++2WS57gu7vcqCMwMDZa7dukRS3JANBtbs7qQhp9Nw2PB4q6tohqUnSDxNjCqcoGeMNg/0kHeZcoVuznsjOrIDt0HgUApflkbtw1DP7Epfc2MJ0anf5GizM8UjMYiXEvv2U/qu8Vb7d5bxAshXM5nh67NSrgst9YzSSodjUCnFQkniz6KLrTkX6c2y2gJ5c9tWhg5SPkAc8OqLrmIwf5jGoHGh6eUJy7AtMcwE3iUpbrLw8EEoZDoDXkzh+RbOtSNKXWV4EAXsIhjQusCOWWQnuAHCy9N4Td0Sntzu/xhCZ8xN0oO67Cqlsk98xSRLXeg21PuuhOYJw0DLF6L68zU2OO0RzqoNq/FjIsltSUJPAIfYKL0yEefeNWOXSrasI1ezw== john@hades"
+  public_key = var.ssh_rsa_public_key
 }
 
-resource "equinix_network_acl_template" "nginx-pri" {
+resource "equinix_network_acl_template" "nginx_pri" {
   name        = "tf-nginx-pri"
   description = "Primary NGINX management ACL template"
   inbound_rule {
@@ -45,7 +46,7 @@ resource "equinix_network_acl_template" "nginx-pri" {
   }
 }
 
-resource "equinix_network_acl_template" "nginx-sec" {
+resource "equinix_network_acl_template" "nginx_sec" {
   name        = "tf-vsrx-sec"
   description = "Secondary NGINX management ACL template"
   inbound_rule {

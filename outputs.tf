@@ -1,21 +1,21 @@
 output "id" {
   description = "Device identifier"
-  value       = equinix_network_device.this.uuid
+  value       = !var.cluster.enabled ? equinix_network_device.non_cluster[0].uuid : equinix_network_device.cluster[0].uuid
 }
 
 output "status" {
   description = "Device provisioning status"
-  value       = equinix_network_device.this.status
+  value       = !var.cluster.enabled ? equinix_network_device.non_cluster[0].status : equinix_network_device.cluster[0].status
 }
 
 output "license_status" {
   description = "Device license status"
-  value       = equinix_network_device.this.license_status
+  value       = !var.cluster.enabled ? equinix_network_device.non_cluster[0].license_status : equinix_network_device.cluster[0].license_status
 }
 
 output "account_number" {
   description = "Device billing account number"
-  value       = equinix_network_device.this.account_number
+  value       = !var.cluster.enabled ? equinix_network_device.non_cluster[0].account_number : equinix_network_device.cluster[0].account_number
 }
 
 output "cpu_count" {
@@ -35,40 +35,40 @@ output "software_version" {
 
 output "region" {
   description = "Device region"
-  value       = equinix_network_device.this.region
+  value       = !var.cluster.enabled ? equinix_network_device.non_cluster[0].region : equinix_network_device.cluster[0].region
 }
 
 output "ibx" {
   description = "Device IBX center"
-  value       = equinix_network_device.this.ibx
+  value       = !var.cluster.enabled ? equinix_network_device.non_cluster[0].ibx : equinix_network_device.cluster[0].ibx
 }
 
 output "ssh_ip_address" {
   description = "Device SSH interface IP address"
-  value       = equinix_network_device.this.ssh_ip_address
+  value       = !var.cluster.enabled ? equinix_network_device.non_cluster[0].ssh_ip_address : equinix_network_device.cluster[0].ssh_ip_address
 }
 
 output "ssh_ip_fqdn" {
   description = "Device SSH interface FQDN"
-  value       = equinix_network_device.this.ssh_ip_fqdn
+  value       = !var.cluster.enabled ? equinix_network_device.non_cluster[0].ssh_ip_fqdn : equinix_network_device.cluster[0].ssh_ip_fqdn
 }
 
 output "interfaces" {
   description = "Device interfaces"
-  value       = equinix_network_device.this.interface
+  value       = !var.cluster.enabled ? equinix_network_device.non_cluster[0].interface : equinix_network_device.cluster[0].interface
 }
 
 output "secondary" {
   description = "Secondary device attributes"
-  value = var.secondary.enabled ? {
-    id             = equinix_network_device.this.secondary_device[0].uuid
-    status         = equinix_network_device.this.secondary_device[0].status
-    license_status = equinix_network_device.this.secondary_device[0].license_status
-    account_number = equinix_network_device.this.secondary_device[0].account_number
-    region         = equinix_network_device.this.secondary_device[0].region
-    ibx            = equinix_network_device.this.secondary_device[0].ibx
-    ssh_ip_address = equinix_network_device.this.secondary_device[0].ssh_ip_address
-    ssh_ip_fqdn    = equinix_network_device.this.secondary_device[0].ssh_ip_fqdn
-    interfaces     = equinix_network_device.this.secondary_device[0].interface
+  value = !var.cluster.enabled && var.secondary.enabled ? {
+    id             = equinix_network_device.non_cluster[0].secondary_device[0].uuid
+    status         = equinix_network_device.non_cluster[0].secondary_device[0].status
+    license_status = equinix_network_device.non_cluster[0].secondary_device[0].license_status
+    account_number = equinix_network_device.non_cluster[0].secondary_device[0].account_number
+    region         = equinix_network_device.non_cluster[0].secondary_device[0].region
+    ibx            = equinix_network_device.non_cluster[0].secondary_device[0].ibx
+    ssh_ip_address = equinix_network_device.non_cluster[0].secondary_device[0].ssh_ip_address
+    ssh_ip_fqdn    = equinix_network_device.non_cluster[0].secondary_device[0].ssh_ip_fqdn
+    interfaces     = equinix_network_device.non_cluster[0].secondary_device[0].interface
   } : null
 }
