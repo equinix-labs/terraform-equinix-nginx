@@ -1,5 +1,5 @@
 ---
-fail_fast: false
+fail_fast: true
 repos:
 
 - repo: https://github.com/antonbabenko/pre-commit-terraform
@@ -8,8 +8,6 @@ repos:
     - id: terraform_fmt
       args:
         - "--args=-recursive"
-    - id: terraform_validate
-      exclude: "^[^/]+$"
     - id: terraform_tflint
       args:
         - "--args=--config=__GIT_WORKING_DIR__/.tflint.hcl"

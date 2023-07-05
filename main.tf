@@ -1,50 +1,99 @@
-# TEMPLATE: Before using "provider" blocks, consider https://www.terraform.io/docs/language/modules/develop/providers.html#implicit-provider-inheritance
-# TEMPLATE:
-# TEMPLATE: All ".tf" files are parsed at once. There is no benefit to numerically prefixed filenames. Keep all resource definitions in "main.tf".
-# TEMPLATE:
-# TEMPLATE: When main.tf becomes unwieldy, consider submodules (https://www.terraform.io/docs/language/modules/develop/structure.html)
-# TEMPLATE: and dependency inversion (https://www.terraform.io/docs/language/modules/develop/composition.html).
-# TEMPLATE:
+data "equinix_network_device_type" "this" {
+  name = "Nginx"
+}
 
-# TEMPLATE: Replace sample provider described below with your own.
-terraform {
-  required_version = ">= 1.3"
+data "equinix_network_device_platform" "this" {
+  device_type = data.equinix_network_device_type.this.code
+  flavor      = var.platform
+}
 
-  provider_meta "equinix" {
-    # TEMPLATE: Replace the module name with your own.
-    module_name = "template"
+data "equinix_network_device_software" "this" {
+  device_type = data.equinix_network_device_type.this.code
+  packages    = [var.software_package]
+  stable      = true
+  most_recent = true
+}
+
+resource "equinix_network_device" "non_cluster" {
+
+  count = !var.cluster.enabled ? 1 : 0
+  lifecycle {
+    ignore_changes = [version, core_count]
+    precondition {
+      condition     = length(var.hostname) >= 2 && length(var.hostname) <= 10
+      error_message = "Device hostname should consist of 2 to 10 characters."
+    }
+  }
+  self_managed           = true
+  name                   = var.name
+  hostname               = var.hostname
+  type_code              = data.equinix_network_device_type.this.code
+  package_code           = var.software_package
+  version                = data.equinix_network_device_software.this.version
+  core_count             = data.equinix_network_device_platform.this.core_count
+  metro_code             = var.metro_code
+  account_number         = var.account_number
+  term_length            = var.term_length
+  interface_count        = var.interface_count
+  notifications          = var.notifications
+  mgmt_acl_template_uuid = var.mgmt_acl_template_uuid != "" ? var.mgmt_acl_template_uuid : null
+  additional_bandwidth   = var.additional_bandwidth > 0 ? var.additional_bandwidth : null
+  ssh_key {
+    username = var.ssh_key.userName
+    key_name = var.ssh_key.keyName
   }
 
-  required_providers {
-    equinix = {
-      source  = "equinix/equinix"
-      version = ">= 1.8.0"
+  dynamic "secondary_device" {
+    for_each = var.secondary.enabled ? [1] : []
+    content {
+      name                   = "${var.name}-secondary"
+      hostname               = var.secondary.hostname
+      metro_code             = var.secondary.metro_code
+      account_number         = var.secondary.account_number
+      notifications          = var.notifications
+      mgmt_acl_template_uuid = try(var.secondary.mgmt_acl_template_uuid, null)
+      ssh_key {
+        username = var.ssh_key.userName
+        key_name = var.ssh_key.keyName
+      }
     }
   }
 }
 
-# TEMPLATE: Replace sample provider described below with your own.
-provider "equinix" {
-  auth_token = var.metal_auth_token
-}
+resource "equinix_network_device" "cluster" {
+  count = var.cluster.enabled ? 1 : 0
+  lifecycle {
+    ignore_changes = [version, core_count]
+  }
+  self_managed           = true
+  name                   = var.name
+  type_code              = data.equinix_network_device_type.this.code
+  package_code           = var.software_package
+  version                = data.equinix_network_device_software.this.version
+  core_count             = data.equinix_network_device_platform.this.core_count
+  metro_code             = var.metro_code
+  account_number         = var.account_number
+  term_length            = var.term_length
+  interface_count        = var.interface_count
+  notifications          = var.notifications
+  mgmt_acl_template_uuid = var.mgmt_acl_template_uuid != "" ? var.mgmt_acl_template_uuid : null
+  additional_bandwidth   = var.additional_bandwidth > 0 ? var.additional_bandwidth : null
+  ssh_key {
+    username = var.ssh_key.userName
+    key_name = var.ssh_key.keyName
+  }
+  cluster_details {
+    cluster_name = var.cluster.name
+    node0 {
+      vendor_configuration {
+        hostname = var.cluster.node0_vendor_configuration_hostname
+      }
+    }
+    node1 {
+      vendor_configuration {
+        hostname = var.cluster.node1_vendor_configuration_hostname
+      }
+    }
 
-# TEMPLATE: Replace sample resource described below with your own.
-resource "equinix_metal_device" "example_device" {
-  hostname         = "example-device"
-  plan             = "c3.small.x86"
-  metro            = "sv"
-  operating_system = "ubuntu_20_04"
-  billing_cycle    = "hourly"
-  project_id       = var.metal_project_id
-}
-
-# TEMPLATE: Run `terraform get` to install local module
-# TEMPLATE: Run `terraform init` to initialize backends and install plugins
-# TEMPLATE: Replace sample in-line local module described below with your own.
-# TEMPLATE
-module "inline_module" {
-  source = "./modules/inline-module"
-
-  # Define any required variables
-  inline_module_project_id = var.metal_project_id
+  }
 }
