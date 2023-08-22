@@ -125,7 +125,6 @@ No modules.
 - [Network Edge NGINX HA pair device](https://registry.terraform.io/modules/equinix-labs/network-edge-device-nginx/equinix/latest/examples/nginx-ha/)
 - [Network Edge cluster device](https://registry.terraform.io/modules/equinix-labs/network-edge-device-nginx/equinix/latest/examples/nginx-cluster/)
 
-
 [equinix_network_device_data_source_url]: (https://registry.terraform.io/providersequinix/equinix/latest/docs/resources/equinix_network_device)
 [equinix_network_device_type_data_source_url]: (https://registry.terraform.io/providers/equinix/equinix/latest/docs/data-sources/equinix_network_device_type)
 [equinix_network_device_platform_data_source_url]: (https://registry.terraform.io/providers/equinix/equinix/latest/docs/data-sources/equinix_network_device_platform)
